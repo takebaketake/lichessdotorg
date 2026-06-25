@@ -194,18 +194,22 @@ class LichessUser {
     if (perfsJson != null) {
       perfs = {};
       for (final entry in perfsJson.entries) {
+        final val = entry.value;
+        if (val is! Map<String, dynamic>) continue;
         if (entry.key == 'storm') {
-          storm = StormPerf.fromJson(entry.value as Map<String, dynamic>);
-        } else {
-          perfs[entry.key] =
-              UserPerf.fromJson(entry.value as Map<String, dynamic>);
+          storm = StormPerf.fromJson(val);
+        } else if (val.containsKey('games') &&
+            val.containsKey('rating') &&
+            val.containsKey('rd') &&
+            val.containsKey('prog')) {
+          perfs[entry.key] = UserPerf.fromJson(val);
         }
       }
     }
 
     return LichessUser(
       id: json['id'] as String,
-      username: json['username'] as String,
+      username: (json['username'] ?? json['name'] ?? json['id']) as String,
       online: json['online'] as bool?,
       perfs: perfs,
       storm: storm,
@@ -224,7 +228,7 @@ class LichessUser {
           : null,
       title: json['title'] as String?,
       url: json['url'] as String?,
-      playing: json['playing'] as String?,
+      playing: json['playing'] is String ? json['playing'] as String : null,
       completionRate: json['completionRate'] as int?,
       count: json['count'] != null
           ? UserCount.fromJson(json['count'] as Map<String, dynamic>)

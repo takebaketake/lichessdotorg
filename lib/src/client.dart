@@ -1,34 +1,48 @@
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:http/http.dart' as http;
 
 import 'exceptions.dart';
+import 'utils/semaphore.dart';
+import 'game_stream_feed.dart';
 import 'models/explorer.dart';
 import 'models/game.dart';
+import 'models/game_stream.dart';
 import 'models/puzzle.dart';
 import 'models/team.dart';
 import 'models/tournament.dart';
 import 'models/tv.dart';
 import 'models/user.dart';
+import 'models/user_status.dart';
+import 'models/board.dart';
+import 'tv_channel_feed.dart';
 
 export 'exceptions.dart';
+export 'game_stream_feed.dart';
+export 'tv_channel_feed.dart';
 export 'models/explorer.dart';
 export 'models/game.dart';
+export 'models/game_stream.dart';
 export 'models/puzzle.dart';
 export 'models/team.dart';
 export 'models/tournament.dart';
 export 'models/tv.dart';
 export 'models/user.dart';
+export 'models/user_status.dart';
+export 'models/board.dart';
 
 class LichessClient {
   static const _base = 'https://lichess.org/api';
+  // Lichess enforces a 2-concurrent-request limit; static so all client
+  // instances in the app share the same slot pool.
+  static final _semaphore = Semaphore(2);
 
   final http.Client _http;
   final String? _token;
 
-  LichessClient({http.Client? httpClient, String? token})
-      : _http = httpClient ?? http.Client(),
-        _token = token;
+  LichessClient({http.Client? httpClient, this._token})
+      : _http = httpClient ?? http.Client();
 
   void close() => _http.close();
 
@@ -43,44 +57,43 @@ class LichessClient {
       };
 
   Future<Map<String, dynamic>> _getJson(String path,
-      {Map<String, String?>? query}) async {
-    final uri = _buildUri(path, query);
-    final response = await _http.get(uri, headers: _jsonHeaders);
-    if (response.statusCode != 200) {
-      throw LichessException(response.statusCode, response.body);
-    }
-    return jsonDecode(response.body) as Map<String, dynamic>;
-  }
+          {Map<String, String?>? query}) =>
+      _semaphore.run(() async {
+        final uri = _buildUri(path, query);
+        final response = await _http.get(uri, headers: _jsonHeaders);
+        if (response.statusCode != 200) {
+          throw LichessException(response.statusCode, response.body);
+        }
+        return jsonDecode(response.body) as Map<String, dynamic>;
+      });
+
+  Future<List<dynamic>> _getJsonList(String path,
+          {Map<String, String?>? query}) =>
+      _semaphore.run(() async {
+        final uri = _buildUri(path, query);
+        final response = await _http.get(uri, headers: _jsonHeaders);
+        if (response.statusCode != 200) {
+          throw LichessException(response.statusCode, response.body);
+        }
+        return jsonDecode(response.body) as List<dynamic>;
+      });
 
   Future<List<Map<String, dynamic>>> _getNdJson(String path,
-      {Map<String, String?>? query}) async {
-    final uri = _buildUri(path, query);
-    final response = await _http.get(uri, headers: _ndJsonHeaders);
-    if (response.statusCode != 200) {
-      throw LichessException(response.statusCode, response.body);
-    }
-    return response.body
-        .trim()
-        .split('\n')
-        .where((line) => line.isNotEmpty)
-        .map((line) => jsonDecode(line) as Map<String, dynamic>)
-        .toList();
-  }
+          {Map<String, String?>? query}) =>
+      _semaphore.run(() async {
+        final uri = _buildUri(path, query);
+        final response = await _http.get(uri, headers: _ndJsonHeaders);
+        if (response.statusCode != 200) {
+          throw LichessException(response.statusCode, response.body);
+        }
+        return response.body
+            .trim()
+            .split('\n')
+            .where((line) => line.isNotEmpty)
+            .map((line) => jsonDecode(line) as Map<String, dynamic>)
+            .toList();
+      });
 
-  Future<String> _getString(String path, {Map<String, String?>? query}) async {
-    final uri = _buildUri(path, query);
-    final response = await _http.get(
-      uri,
-      headers: {
-        'Accept': 'application/x-chess-pgn',
-        if (_token != null) 'Authorization': 'Bearer $_token',
-      },
-    );
-    if (response.statusCode != 200) {
-      throw LichessException(response.statusCode, response.body);
-    }
-    return response.body;
-  }
 
   Uri _buildUri(String path, Map<String, String?>? query) {
     if (query == null || query.isEmpty) {
@@ -101,33 +114,52 @@ class LichessClient {
   }
 
   /// Returns users in the same order as [usernames].
-  Future<List<LichessUser>> getUsers(List<String> usernames) async {
-    final uri = Uri.parse('$_base/users');
-    final response = await _http.post(
-      uri,
-      headers: {
-        'Content-Type': 'text/plain',
-        ..._jsonHeaders,
-      },
-      body: usernames.join(','),
-    );
-    if (response.statusCode != 200) {
-      throw LichessException(response.statusCode, response.body);
-    }
-    return (jsonDecode(response.body) as List<dynamic>)
-        .map((e) => LichessUser.fromJson(e as Map<String, dynamic>))
+  Future<List<LichessUser>> getUsers(List<String> usernames) =>
+      _semaphore.run(() async {
+        final uri = Uri.parse('$_base/users');
+        final response = await _http.post(
+          uri,
+          headers: {'Content-Type': 'text/plain', ..._jsonHeaders},
+          body: usernames.join(','),
+        );
+        if (response.statusCode != 200) {
+          throw LichessException(response.statusCode, response.body);
+        }
+        return (jsonDecode(response.body) as List<dynamic>)
+            .map((e) => LichessUser.fromJson(e as Map<String, dynamic>))
+            .toList();
+      });
+
+  Future<List<RatingHistory>> getUserRatingHistory(String username) async {
+    final list = await _getJsonList('/user/$username/rating-history');
+    return list
+        .map((e) => RatingHistory.fromJson(e as Map<String, dynamic>))
         .toList();
   }
 
-  Future<List<RatingHistory>> getUserRatingHistory(String username) async {
-    final uri = Uri.parse('$_base/user/$username/rating-history');
-    final response = await _http.get(uri, headers: _jsonHeaders);
-    if (response.statusCode != 200) {
-      throw LichessException(response.statusCode, response.body);
-    }
-    return (jsonDecode(response.body) as List<dynamic>)
-        .map((e) => RatingHistory.fromJson(e as Map<String, dynamic>))
+  /// Returns real-time status for up to 100 users.
+  ///
+  /// Set [withGameIds] to true to include the current [UserStatus.gameId]
+  /// for users who are playing.
+  Future<List<UserStatus>> getUsersStatus(
+    List<String> ids, {
+    bool withGameIds = false,
+  }) async {
+    final list = await _getJsonList('/users/status', query: {
+      'ids': ids.join(','),
+      if (withGameIds) 'withGameIds': 'true',
+    });
+    return list
+        .map((e) => UserStatus.fromJson(e as Map<String, dynamic>))
         .toList();
+  }
+
+  /// Returns the list of users followed by the authenticated user.
+  ///
+  /// Requires an auth token with the `followRead` scope.
+  Future<List<LichessUser>> getFollowing() async {
+    final rows = await _getNdJson('/rel/following');
+    return rows.map(LichessUser.fromJson).toList();
   }
 
   /// [perf] must be one of: ultraBullet, bullet, blitz, rapid, classical,
@@ -156,9 +188,18 @@ class LichessClient {
     return LichessGame.fromJson(json);
   }
 
-  Future<String> getGamePgn(String id) async {
-    return _getString('/game/$id');
-  }
+  Future<String> getGamePgn(String id) =>
+      _semaphore.run(() async {
+        final uri = Uri.parse('https://lichess.org/game/export/$id');
+        final response = await _http.get(uri, headers: {
+          'Accept': 'application/x-chess-pgn',
+          if (_token != null) 'Authorization': 'Bearer $_token',
+        });
+        if (response.statusCode != 200) {
+          throw LichessException(response.statusCode, response.body);
+        }
+        return response.body;
+      });
 
   /// Downloads games for [username] in NDJSON format.
   ///
@@ -207,32 +248,30 @@ class LichessClient {
     bool opening = false,
     bool clocks = false,
     bool evals = false,
-  }) async {
-    final uri = Uri.parse('$_base/games').replace(queryParameters: {
-      'moves': '$moves',
-      'opening': '$opening',
-      'clocks': '$clocks',
-      'evals': '$evals',
-    });
-    final response = await _http.post(
-      uri,
-      headers: {
-        'Content-Type': 'text/plain',
-        ..._ndJsonHeaders,
-      },
-      body: ids.join(','),
-    );
-    if (response.statusCode != 200) {
-      throw LichessException(response.statusCode, response.body);
-    }
-    return response.body
-        .trim()
-        .split('\n')
-        .where((line) => line.isNotEmpty)
-        .map((line) => LichessGame.fromJson(
-            jsonDecode(line) as Map<String, dynamic>))
-        .toList();
-  }
+  }) =>
+      _semaphore.run(() async {
+        final uri = Uri.parse('$_base/games').replace(queryParameters: {
+          'moves': '$moves',
+          'opening': '$opening',
+          'clocks': '$clocks',
+          'evals': '$evals',
+        });
+        final response = await _http.post(
+          uri,
+          headers: {'Content-Type': 'text/plain', ..._ndJsonHeaders},
+          body: ids.join(','),
+        );
+        if (response.statusCode != 200) {
+          throw LichessException(response.statusCode, response.body);
+        }
+        return response.body
+            .trim()
+            .split('\n')
+            .where((line) => line.isNotEmpty)
+            .map((line) =>
+                LichessGame.fromJson(jsonDecode(line) as Map<String, dynamic>))
+            .toList();
+      });
 
   // ── Puzzles ────────────────────────────────────────────────────────────────
 
@@ -241,12 +280,118 @@ class LichessClient {
     return DailyPuzzle.fromJson(json);
   }
 
+  /// Streams real-time move events for one or more ongoing games.
+  ///
+  /// [ids] are Lichess game IDs (up to 300). For each game the stream emits a
+  /// [GameStreamInitial] with the current position, then [GameStreamMove] per
+  /// move, and finally [GameStreamFinish] when the game ends. The stream itself
+  /// closes when all requested games are finished or the connection drops —
+  /// callers are responsible for reconnection.
+  Stream<GameStreamEvent> streamGames(List<String> ids) async* {
+    if (ids.isEmpty) return;
+    final request = http.Request(
+      'GET',
+      _buildUri('/stream/game/${ids.join(',')}', null),
+    );
+    request.headers.addAll(_ndJsonHeaders);
+    final http.StreamedResponse response;
+    try {
+      response = await _http.send(request);
+    } on http.ClientException {
+      return; // network unavailable; stream closes so callers reconnect
+    }
+    if (response.statusCode != 200) {
+      final body = await response.stream.bytesToString();
+      throw LichessException(response.statusCode, body);
+    }
+    try {
+      await for (final line in response.stream
+          .transform(const Utf8Decoder())
+          .transform(const LineSplitter())
+          .where((l) => l.isNotEmpty)) {
+        yield GameStreamEvent.fromJson(
+            jsonDecode(line) as Map<String, dynamic>);
+      }
+    } on http.ClientException {
+      // Connection dropped or the client was closed mid-stream. Close the
+      // stream gracefully (per the doc above) rather than surfacing the raw
+      // socket error; callers reconnect if they still want the games.
+    }
+  }
+
   // ── TV ─────────────────────────────────────────────────────────────────────
 
   Future<TvChannels> getTvChannels() async {
     final json = await _getJson('/tv/channels');
     return TvChannels.fromJson(json);
   }
+
+  /// Streams live move events for a Lichess TV channel.
+  ///
+  /// [channel] is the lowercase channel slug: 'best', 'bullet', 'blitz',
+  /// 'rapid', 'classical', 'chess960', 'ultraBullet', 'computer', etc.
+  ///
+  /// Emits a [TvFeaturedGame] when a new game starts, then [TvFenUpdate]
+  /// for each move. When the featured game ends the stream switches to the
+  /// next game and emits another [TvFeaturedGame].
+  Stream<TvFeedEvent> streamTvFeed(String channel) async* {
+    final request = http.Request('GET', _buildUri('/tv/$channel/feed', null));
+    request.headers.addAll(_ndJsonHeaders);
+    final http.StreamedResponse response;
+    try {
+      response = await _http.send(request);
+    } on http.ClientException {
+      return; // network unavailable; stream closes so callers reconnect
+    }
+    if (response.statusCode != 200) {
+      final body = await response.stream.bytesToString();
+      throw LichessException(response.statusCode, body);
+    }
+    try {
+      await for (final line in response.stream
+          .transform(const Utf8Decoder())
+          .transform(const LineSplitter())
+          .where((l) => l.isNotEmpty)) {
+        yield TvFeedEvent.fromJson(jsonDecode(line) as Map<String, dynamic>);
+      }
+    } on http.ClientException {
+      // Connection dropped or the client was closed mid-stream. Close the
+      // stream gracefully (per the doc above); TvChannelFeed and direct
+      // callers reconnect via onDone.
+    }
+  }
+
+  /// A resilient listener for a set of games that reconnects on dropped or
+  /// stalled connections, where [streamGames] gives up on the first hiccup.
+  ///
+  /// Listen to [GameStreamFeed.events] and then call [GameStreamFeed.start].
+  GameStreamFeed watchGames(
+    List<String> ids, {
+    Duration idleTimeout = const Duration(seconds: 90),
+    int maxConsecutiveFailures = 8,
+  }) =>
+      GameStreamFeed(
+        client: this,
+        ids: ids,
+        idleTimeout: idleTimeout,
+        maxConsecutiveFailures: maxConsecutiveFailures,
+      );
+
+  /// A resilient listener for a TV [channel] feed that reconnects on dropped
+  /// or stalled connections, where [streamTvFeed] gives up on the first hiccup.
+  ///
+  /// Listen to [TvChannelFeed.events] and then call [TvChannelFeed.start].
+  TvChannelFeed watchTvChannel(
+    String channel, {
+    Duration idleTimeout = const Duration(seconds: 90),
+    int maxConsecutiveFailures = 8,
+  }) =>
+      TvChannelFeed(
+        client: this,
+        channel: channel,
+        idleTimeout: idleTimeout,
+        maxConsecutiveFailures: maxConsecutiveFailures,
+      );
 
   // ── Tournaments ────────────────────────────────────────────────────────────
 
@@ -409,4 +554,132 @@ class LichessClient {
     });
     return CloudEval.fromJson(json);
   }
+
+  // ── Board API ──────────────────────────────────────────────────────────────
+
+  Future<List<LichessPlayingGame>> getOngoingGames() async {
+    final json = await _getJson('/account/playing');
+    final list = json['nowPlaying'] as List<dynamic>? ?? [];
+    return list
+        .map((e) => LichessPlayingGame.fromJson(e as Map<String, dynamic>))
+        .toList();
+  }
+
+  Future<String> createAiChallenge({
+    int level = 1,
+    int? clockLimit,
+    int? clockIncrement,
+    String color = 'random',
+    String? fen,
+  }) =>
+      _semaphore.run(() async {
+        final uri = Uri.parse('$_base/challenge/ai');
+        final body = {
+          'level': '$level',
+          'color': color,
+          if (clockLimit != null) 'clock.limit': '$clockLimit',
+          if (clockIncrement != null) 'clock.increment': '$clockIncrement',
+          if (fen != null) 'fen': fen,
+        };
+        final response = await _http.post(
+          uri,
+          headers: _jsonHeaders,
+          body: body,
+        );
+        if (response.statusCode != 201 && response.statusCode != 200) {
+          throw LichessException(response.statusCode, response.body);
+        }
+        final json = jsonDecode(response.body) as Map<String, dynamic>;
+        return json['id'] as String;
+      });
+
+  Future<Map<String, dynamic>> createOpenChallenge({
+    int? clockLimit,
+    int? clockIncrement,
+    String color = 'random',
+    String? fen,
+  }) =>
+      _semaphore.run(() async {
+        final uri = Uri.parse('$_base/challenge/open');
+        final body = {
+          'color': color,
+          if (clockLimit != null) 'clock.limit': '$clockLimit',
+          if (clockIncrement != null) 'clock.increment': '$clockIncrement',
+          if (fen != null) 'fen': fen,
+        };
+        final response = await _http.post(
+          uri,
+          headers: _jsonHeaders,
+          body: body,
+        );
+        if (response.statusCode != 200) {
+          throw LichessException(response.statusCode, response.body);
+        }
+        return jsonDecode(response.body) as Map<String, dynamic>;
+      });
+
+  Stream<LichessBoardEvent> streamBoardGame(String gameId) async* {
+    final request = http.Request(
+      'GET',
+      Uri.parse('$_base/board/game/stream/$gameId'),
+    );
+    request.headers.addAll(_ndJsonHeaders);
+    final http.StreamedResponse response;
+    try {
+      response = await _http.send(request);
+    } on http.ClientException {
+      return;
+    }
+    if (response.statusCode != 200) {
+      final body = await response.stream.bytesToString();
+      throw LichessException(response.statusCode, body);
+    }
+    try {
+      await for (final line in response.stream
+          .transform(const Utf8Decoder())
+          .transform(const LineSplitter())
+          .where((l) => l.isNotEmpty)) {
+        yield LichessBoardEvent.fromJson(
+            jsonDecode(line) as Map<String, dynamic>);
+      }
+    } on http.ClientException {
+      // Connection dropped
+    }
+  }
+
+  Future<void> writeBoardMove(String gameId, String uciMove) =>
+      _semaphore.run(() async {
+        final uri = Uri.parse('$_base/board/game/$gameId/move/$uciMove');
+        final response = await _http.post(
+          uri,
+          headers: _jsonHeaders,
+        );
+        if (response.statusCode != 200) {
+          throw LichessException(response.statusCode, response.body);
+        }
+      });
+
+  Future<void> resignBoardGame(String gameId) =>
+      _semaphore.run(() async {
+        final uri = Uri.parse('$_base/board/game/$gameId/resign');
+        final response = await _http.post(
+          uri,
+          headers: _jsonHeaders,
+        );
+        if (response.statusCode != 200) {
+          throw LichessException(response.statusCode, response.body);
+        }
+      });
+
+  Future<void> abortBoardGame(String gameId) =>
+      _semaphore.run(() async {
+        final uri = Uri.parse('$_base/board/game/$gameId/abort');
+        final response = await _http.post(
+          uri,
+          headers: _jsonHeaders,
+        );
+        if (response.statusCode != 200) {
+          throw LichessException(response.statusCode, response.body);
+        }
+      });
 }
