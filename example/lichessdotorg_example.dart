@@ -1,5 +1,1 @@
-import 'package:lichessdotorg/lichessdotorg.dart';
-
-void main() {
-
-}
+void main() {}

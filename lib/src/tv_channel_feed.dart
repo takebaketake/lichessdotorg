@@ -27,14 +27,13 @@ import 'client.dart';
 /// [TvFeedEvent]s flowing.
 class TvChannelFeed {
   TvChannelFeed({
-    required LichessClient client,
-    required String channel,
+    required this._client,
+    required this._channel,
     this.idleTimeout = const Duration(seconds: 90),
     this.baseBackoff = const Duration(seconds: 2),
     this.maxBackoff = const Duration(seconds: 15),
     this.maxConsecutiveFailures = 8,
-  })  : _client = client,
-        _channel = channel;
+  });
 
   final LichessClient _client;
   final String _channel;
@@ -76,12 +75,14 @@ class TvChannelFeed {
   void _connect() {
     if (_closed) return;
     _receivedEventThisAttempt = false;
-    _sub = _client.streamTvFeed(_channel).listen(
-      _onEvent,
-      onDone: _onConnectionEnded,
-      onError: (_) => _onConnectionEnded(),
-      cancelOnError: true,
-    );
+    _sub = _client
+        .streamTvFeed(_channel)
+        .listen(
+          _onEvent,
+          onDone: _onConnectionEnded,
+          onError: (_) => _onConnectionEnded(),
+          cancelOnError: true,
+        );
     _armWatchdog();
   }
 
