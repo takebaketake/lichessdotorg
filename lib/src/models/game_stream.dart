@@ -56,16 +56,25 @@ class GameStreamInitial extends GameStreamEvent {
 }
 
 class GameStreamMove extends GameStreamEvent {
-  const GameStreamMove({required this.fen, this.lastMoveUci});
+  const GameStreamMove({
+    required this.fen,
+    this.lastMoveUci,
+    required this.whiteClockSecs,
+    required this.blackClockSecs,
+  });
 
   final String fen;
   final String? lastMoveUci;
+  final int whiteClockSecs;
+  final int blackClockSecs;
 
   factory GameStreamMove.fromJson(Map<String, dynamic> json) {
     final uci = json['uci'] as String? ?? json['lm'] as String?;
     return GameStreamMove(
       fen: json['fen'] as String,
       lastMoveUci: uci != null && uci.length >= 4 ? uci : null,
+      whiteClockSecs: json['wc'] as int? ?? 0,
+      blackClockSecs: json['bc'] as int? ?? 0,
     );
   }
 }
