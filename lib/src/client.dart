@@ -193,20 +193,23 @@ class LichessClient {
     return LichessGame.fromJson(json);
   }
 
-  Future<String> getGamePgn(String id) => _semaphore.run(() async {
-    final uri = Uri.parse('https://lichess.org/game/export/$id');
-    final response = await _http.get(
-      uri,
-      headers: {
-        'Accept': 'application/x-chess-pgn',
-        if (_token != null) 'Authorization': 'Bearer $_token',
-      },
-    );
-    if (response.statusCode != 200) {
-      throw LichessException(response.statusCode, response.body);
-    }
-    return response.body;
-  });
+  Future<String> getGamePgn(String id, {bool clocks = false}) =>
+      _semaphore.run(() async {
+        final uri = Uri.parse(
+          'https://lichess.org/game/export/$id',
+        ).replace(queryParameters: {if (clocks) 'clocks': 'true'});
+        final response = await _http.get(
+          uri,
+          headers: {
+            'Accept': 'application/x-chess-pgn',
+            if (_token != null) 'Authorization': 'Bearer $_token',
+          },
+        );
+        if (response.statusCode != 200) {
+          throw LichessException(response.statusCode, response.body);
+        }
+        return response.body;
+      });
 
   /// Downloads games for [username] in NDJSON format.
   ///

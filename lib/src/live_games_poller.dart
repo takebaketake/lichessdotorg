@@ -2,20 +2,18 @@ import 'client.dart';
 
 class LiveGamesPollResult {
   final List<UserStatus> popular;
-  final List<UserStatus> friends;
   final List<UserStatus> following;
 
   const LiveGamesPollResult({
     required this.popular,
-    required this.friends,
     required this.following,
   });
 }
 
-/// Fetches live game statuses for three ID lists (popular, friends, following)
+/// Fetches live game statuses for two ID lists (popular, following)
 /// with two optimizations:
 ///
-/// 1. If the combined effective IDs across all three lists fit within the 100-ID
+/// 1. If the combined effective IDs across both lists fit within the 100-ID
 ///    API limit, a single request is fired and results are partitioned back.
 ///    Otherwise one request is fired per non-empty category.
 ///
@@ -37,27 +35,22 @@ class LiveGamesPoller {
 
   Future<LiveGamesPollResult> poll({
     required List<String> popular,
-    required List<String> friends,
     required List<String> following,
   }) async {
     // Lichess returns IDs in lowercase; normalize here so set lookups match.
     final effPopular = _computeEffective(
         'popular', popular.map((id) => id.toLowerCase()).toList());
-    final effFriends = _computeEffective(
-        'friends', friends.map((id) => id.toLowerCase()).toList());
     final effFollowing = _computeEffective(
         'following', following.map((id) => id.toLowerCase()).toList());
 
-    final total = effPopular.length + effFriends.length + effFollowing.length;
+    final total = effPopular.length + effFollowing.length;
 
     List<UserStatus> popularResult;
-    List<UserStatus> friendsResult;
     List<UserStatus> followingResult;
 
     if (total <= _maxPerRequest) {
       final merged = {
         ...effPopular,
-        ...effFriends,
         ...effFollowing,
       }.toList();
 
@@ -66,11 +59,9 @@ class LiveGamesPoller {
           : await _client.getUsersStatus(merged, withGameIds: true);
 
       final popularSet = effPopular.toSet();
-      final friendsSet = effFriends.toSet();
       final followingSet = effFollowing.toSet();
 
       popularResult = statuses.where((s) => popularSet.contains(s.id)).toList();
-      friendsResult = statuses.where((s) => friendsSet.contains(s.id)).toList();
       followingResult =
           statuses.where((s) => followingSet.contains(s.id)).toList();
     } else {
@@ -78,28 +69,21 @@ class LiveGamesPoller {
         effPopular.isEmpty
             ? Future.value(<UserStatus>[])
             : _client.getUsersStatus(effPopular, withGameIds: true),
-        effFriends.isEmpty
-            ? Future.value(<UserStatus>[])
-            : _client.getUsersStatus(effFriends, withGameIds: true),
         effFollowing.isEmpty
             ? Future.value(<UserStatus>[])
             : _client.getUsersStatus(effFollowing, withGameIds: true),
       ]);
       popularResult = results[0];
-      friendsResult = results[1];
-      followingResult = results[2];
+      followingResult = results[1];
     }
 
     _prevLiveIds['popular'] =
         popularResult.where((s) => s.gameId != null).map((s) => s.id).toSet();
-    _prevLiveIds['friends'] =
-        friendsResult.where((s) => s.gameId != null).map((s) => s.id).toSet();
     _prevLiveIds['following'] =
         followingResult.where((s) => s.gameId != null).map((s) => s.id).toSet();
 
     return LiveGamesPollResult(
       popular: popularResult,
-      friends: friendsResult,
       following: followingResult,
     );
   }
