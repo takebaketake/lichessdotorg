@@ -72,7 +72,7 @@ class GameStreamFeed {
     _sub = _client.streamGames(_ids).listen(
       _onEvent,
       onDone: _onConnectionEnded,
-      onError: (_) => _onConnectionEnded(),
+      onError: _onConnectionEnded,
       cancelOnError: true,
     );
     _armWatchdog();
@@ -98,12 +98,15 @@ class GameStreamFeed {
     });
   }
 
-  void _onConnectionEnded() {
+  void _onConnectionEnded([Object? error, StackTrace? stackTrace]) {
+    if (error != null) {
+      print('GameStreamFeed error: $error\n$stackTrace');
+    }
     _teardownConnection();
     if (_finished) {
       _close();
     } else if (!_receivedEventThisAttempt) {
-      // The socket never opened (network down). Retry at max backoff without
+      // The socket never opened (network down). Retry at base backoff without
       // burning the consecutive-failure budget — the counter only matters for
       // detecting a sick server, not for an offline device.
       _scheduleOfflineRetry();
@@ -115,7 +118,7 @@ class GameStreamFeed {
   void _scheduleOfflineRetry() {
     if (_closed) return;
     _retryTimer?.cancel();
-    _retryTimer = Timer(maxBackoff, () {
+    _retryTimer = Timer(baseBackoff, () {
       if (!_closed && !_finished) _connect();
     });
   }
