@@ -4,10 +4,7 @@ class LiveGamesPollResult {
   final List<UserStatus> popular;
   final List<UserStatus> following;
 
-  const LiveGamesPollResult({
-    required this.popular,
-    required this.following,
-  });
+  const LiveGamesPollResult({required this.popular, required this.following});
 }
 
 /// Fetches live game statuses for two ID lists (popular, following)
@@ -39,9 +36,13 @@ class LiveGamesPoller {
   }) async {
     // Lichess returns IDs in lowercase; normalize here so set lookups match.
     final effPopular = _computeEffective(
-        'popular', popular.map((id) => id.toLowerCase()).toList());
+      'popular',
+      popular.map((id) => id.toLowerCase()).toList(),
+    );
     final effFollowing = _computeEffective(
-        'following', following.map((id) => id.toLowerCase()).toList());
+      'following',
+      following.map((id) => id.toLowerCase()).toList(),
+    );
 
     final total = effPopular.length + effFollowing.length;
 
@@ -49,10 +50,7 @@ class LiveGamesPoller {
     List<UserStatus> followingResult;
 
     if (total <= _maxPerRequest) {
-      final merged = {
-        ...effPopular,
-        ...effFollowing,
-      }.toList();
+      final merged = {...effPopular, ...effFollowing}.toList();
 
       final statuses = merged.isEmpty
           ? <UserStatus>[]
@@ -62,8 +60,9 @@ class LiveGamesPoller {
       final followingSet = effFollowing.toSet();
 
       popularResult = statuses.where((s) => popularSet.contains(s.id)).toList();
-      followingResult =
-          statuses.where((s) => followingSet.contains(s.id)).toList();
+      followingResult = statuses
+          .where((s) => followingSet.contains(s.id))
+          .toList();
     } else {
       final results = await Future.wait([
         effPopular.isEmpty
@@ -77,10 +76,14 @@ class LiveGamesPoller {
       followingResult = results[1];
     }
 
-    _prevLiveIds['popular'] =
-        popularResult.where((s) => s.gameId != null).map((s) => s.id).toSet();
-    _prevLiveIds['following'] =
-        followingResult.where((s) => s.gameId != null).map((s) => s.id).toSet();
+    _prevLiveIds['popular'] = popularResult
+        .where((s) => s.gameId != null)
+        .map((s) => s.id)
+        .toSet();
+    _prevLiveIds['following'] = followingResult
+        .where((s) => s.gameId != null)
+        .map((s) => s.id)
+        .toSet();
 
     return LiveGamesPollResult(
       popular: popularResult,

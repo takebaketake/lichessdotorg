@@ -30,8 +30,10 @@ class GameStreamInitial extends GameStreamEvent {
   final int? whiteRating;
   final String? blackName;
   final int? blackRating;
+
   /// Current board position at stream open time (useful for reconnect resync).
   final String? fen;
+
   /// UCI of the last move played, if any.
   final String? lastMoveUci;
 

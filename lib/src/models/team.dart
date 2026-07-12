@@ -4,10 +4,8 @@ class TeamLeader {
 
   const TeamLeader({required this.id, required this.name});
 
-  factory TeamLeader.fromJson(Map<String, dynamic> json) => TeamLeader(
-        id: json['id'] as String,
-        name: json['name'] as String,
-      );
+  factory TeamLeader.fromJson(Map<String, dynamic> json) =>
+      TeamLeader(id: json['id'] as String, name: json['name'] as String);
 }
 
 class LichessTeam {
@@ -34,22 +32,22 @@ class LichessTeam {
   });
 
   factory LichessTeam.fromJson(Map<String, dynamic> json) => LichessTeam(
-        id: json['id'] as String,
-        name: json['name'] as String,
-        description: json['description'] as String?,
-        open: json['open'] as bool? ?? false,
-        leader: json['leader'] != null
-            ? TeamLeader.fromJson(json['leader'] as Map<String, dynamic>)
-            : null,
-        leaders: json['leaders'] != null
-            ? (json['leaders'] as List<dynamic>)
-                .map((e) => TeamLeader.fromJson(e as Map<String, dynamic>))
-                .toList()
-            : null,
-        nbMembers: json['nbMembers'] as int,
-        joined: json['joined'] as bool?,
-        requested: json['requested'] as bool?,
-      );
+    id: json['id'] as String,
+    name: json['name'] as String,
+    description: json['description'] as String?,
+    open: json['open'] as bool? ?? false,
+    leader: json['leader'] != null
+        ? TeamLeader.fromJson(json['leader'] as Map<String, dynamic>)
+        : null,
+    leaders: json['leaders'] != null
+        ? (json['leaders'] as List<dynamic>)
+              .map((e) => TeamLeader.fromJson(e as Map<String, dynamic>))
+              .toList()
+        : null,
+    nbMembers: json['nbMembers'] as int,
+    joined: json['joined'] as bool?,
+    requested: json['requested'] as bool?,
+  );
 }
 
 class TeamSearchResult {

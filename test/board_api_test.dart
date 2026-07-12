@@ -112,9 +112,9 @@ void main() {
                 'hasMoved': false,
                 'isMyTurn': true,
                 'opponent': {'username': 'Stockfish level 2'},
-                'secondsLeft': 60
-              }
-            ]
+                'secondsLeft': 60,
+              },
+            ],
           }),
           200,
         );
@@ -153,10 +153,7 @@ void main() {
         expect(request.bodyFields['color'], 'random');
         return http.Response(
           jsonEncode({
-            'challenge': {
-              'id': 'openId',
-              'url': 'https://lichess.org/openId'
-            }
+            'challenge': {'id': 'openId', 'url': 'https://lichess.org/openId'},
           }),
           200,
         );

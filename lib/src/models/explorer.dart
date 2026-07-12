@@ -5,9 +5,9 @@ class ExplorerPlayer {
   const ExplorerPlayer({required this.name, required this.rating});
 
   factory ExplorerPlayer.fromJson(Map<String, dynamic> json) => ExplorerPlayer(
-        name: json['name'] as String,
-        rating: json['rating'] as int,
-      );
+    name: json['name'] as String,
+    rating: json['rating'] as int,
+  );
 }
 
 class ExplorerGame {
@@ -30,14 +30,14 @@ class ExplorerGame {
   });
 
   factory ExplorerGame.fromJson(Map<String, dynamic> json) => ExplorerGame(
-        id: json['id'] as String,
-        uci: json['uci'] as String?,
-        white: ExplorerPlayer.fromJson(json['white'] as Map<String, dynamic>),
-        black: ExplorerPlayer.fromJson(json['black'] as Map<String, dynamic>),
-        winner: json['winner'] as String?,
-        year: json['year'] as int?,
-        month: json['month'] as String?,
-      );
+    id: json['id'] as String,
+    uci: json['uci'] as String?,
+    white: ExplorerPlayer.fromJson(json['white'] as Map<String, dynamic>),
+    black: ExplorerPlayer.fromJson(json['black'] as Map<String, dynamic>),
+    winner: json['winner'] as String?,
+    year: json['year'] as int?,
+    month: json['month'] as String?,
+  );
 }
 
 class ExplorerMove {
@@ -74,17 +74,17 @@ class ExplorerMove {
   double get blackWinRate => total == 0 ? 0 : black / total;
 
   factory ExplorerMove.fromJson(Map<String, dynamic> json) => ExplorerMove(
-        uci: json['uci'] as String,
-        san: json['san'] as String,
-        white: json['white'] as int,
-        draws: json['draws'] as int,
-        black: json['black'] as int,
-        averageRating: json['averageRating'] as int?,
-        averageOpponentRating: json['averageOpponentRating'] as int?,
-        game: json['game'] != null
-            ? ExplorerGame.fromJson(json['game'] as Map<String, dynamic>)
-            : null,
-      );
+    uci: json['uci'] as String,
+    san: json['san'] as String,
+    white: json['white'] as int,
+    draws: json['draws'] as int,
+    black: json['black'] as int,
+    averageRating: json['averageRating'] as int?,
+    averageOpponentRating: json['averageOpponentRating'] as int?,
+    game: json['game'] != null
+        ? ExplorerGame.fromJson(json['game'] as Map<String, dynamic>)
+        : null,
+  );
 }
 
 class ExplorerOpening {
@@ -94,10 +94,7 @@ class ExplorerOpening {
   const ExplorerOpening({required this.eco, required this.name});
 
   factory ExplorerOpening.fromJson(Map<String, dynamic> json) =>
-      ExplorerOpening(
-        eco: json['eco'] as String,
-        name: json['name'] as String,
-      );
+      ExplorerOpening(eco: json['eco'] as String, name: json['name'] as String);
 }
 
 class ExplorerResult {
@@ -126,22 +123,22 @@ class ExplorerResult {
   double get blackWinRate => total == 0 ? 0 : black / total;
 
   factory ExplorerResult.fromJson(Map<String, dynamic> json) => ExplorerResult(
-        white: json['white'] as int,
-        draws: json['draws'] as int,
-        black: json['black'] as int,
-        moves: (json['moves'] as List<dynamic>)
-            .map((e) => ExplorerMove.fromJson(e as Map<String, dynamic>))
-            .toList(),
-        topGames: (json['topGames'] as List<dynamic>? ?? [])
-            .map((e) => ExplorerGame.fromJson(e as Map<String, dynamic>))
-            .toList(),
-        recentGames: (json['recentGames'] as List<dynamic>? ?? [])
-            .map((e) => ExplorerGame.fromJson(e as Map<String, dynamic>))
-            .toList(),
-        opening: json['opening'] != null
-            ? ExplorerOpening.fromJson(json['opening'] as Map<String, dynamic>)
-            : null,
-      );
+    white: json['white'] as int,
+    draws: json['draws'] as int,
+    black: json['black'] as int,
+    moves: (json['moves'] as List<dynamic>)
+        .map((e) => ExplorerMove.fromJson(e as Map<String, dynamic>))
+        .toList(),
+    topGames: (json['topGames'] as List<dynamic>? ?? [])
+        .map((e) => ExplorerGame.fromJson(e as Map<String, dynamic>))
+        .toList(),
+    recentGames: (json['recentGames'] as List<dynamic>? ?? [])
+        .map((e) => ExplorerGame.fromJson(e as Map<String, dynamic>))
+        .toList(),
+    opening: json['opening'] != null
+        ? ExplorerOpening.fromJson(json['opening'] as Map<String, dynamic>)
+        : null,
+  );
 }
 
 class CloudEvalPv {
@@ -156,10 +153,10 @@ class CloudEvalPv {
   const CloudEvalPv({required this.moves, this.cp, this.mate});
 
   factory CloudEvalPv.fromJson(Map<String, dynamic> json) => CloudEvalPv(
-        moves: json['moves'] as String,
-        cp: json['cp'] as int?,
-        mate: json['mate'] as int?,
-      );
+    moves: json['moves'] as String,
+    cp: json['cp'] as int?,
+    mate: json['mate'] as int?,
+  );
 }
 
 class CloudEval {
@@ -176,11 +173,11 @@ class CloudEval {
   });
 
   factory CloudEval.fromJson(Map<String, dynamic> json) => CloudEval(
-        fen: json['fen'] as String,
-        knodes: json['knodes'] as int,
-        depth: json['depth'] as int,
-        pvs: (json['pvs'] as List<dynamic>)
-            .map((e) => CloudEvalPv.fromJson(e as Map<String, dynamic>))
-            .toList(),
-      );
+    fen: json['fen'] as String,
+    knodes: json['knodes'] as int,
+    depth: json['depth'] as int,
+    pvs: (json['pvs'] as List<dynamic>)
+        .map((e) => CloudEvalPv.fromJson(e as Map<String, dynamic>))
+        .toList(),
+  );
 }

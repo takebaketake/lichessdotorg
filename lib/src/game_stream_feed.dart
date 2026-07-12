@@ -69,12 +69,14 @@ class GameStreamFeed {
   void _connect() {
     if (_closed || _finished) return;
     _receivedEventThisAttempt = false;
-    _sub = _client.streamGames(_ids).listen(
-      _onEvent,
-      onDone: _onConnectionEnded,
-      onError: _onConnectionEnded,
-      cancelOnError: true,
-    );
+    _sub = _client
+        .streamGames(_ids)
+        .listen(
+          _onEvent,
+          onDone: _onConnectionEnded,
+          onError: _onConnectionEnded,
+          cancelOnError: true,
+        );
     _armWatchdog();
   }
 

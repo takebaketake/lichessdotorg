@@ -4,10 +4,8 @@ class PuzzleGamePerf {
 
   const PuzzleGamePerf({required this.key, required this.name});
 
-  factory PuzzleGamePerf.fromJson(Map<String, dynamic> json) => PuzzleGamePerf(
-        key: json['key'] as String,
-        name: json['name'] as String,
-      );
+  factory PuzzleGamePerf.fromJson(Map<String, dynamic> json) =>
+      PuzzleGamePerf(key: json['key'] as String, name: json['name'] as String);
 }
 
 class PuzzleGamePlayer {
@@ -50,15 +48,15 @@ class PuzzleGame {
   });
 
   factory PuzzleGame.fromJson(Map<String, dynamic> json) => PuzzleGame(
-        id: json['id'] as String,
-        perf: PuzzleGamePerf.fromJson(json['perf'] as Map<String, dynamic>),
-        rated: json['rated'] as bool,
-        players: (json['players'] as List<dynamic>)
-            .map((e) => PuzzleGamePlayer.fromJson(e as Map<String, dynamic>))
-            .toList(),
-        pgn: json['pgn'] as String,
-        clock: json['clock'] as String?,
-      );
+    id: json['id'] as String,
+    perf: PuzzleGamePerf.fromJson(json['perf'] as Map<String, dynamic>),
+    rated: json['rated'] as bool,
+    players: (json['players'] as List<dynamic>)
+        .map((e) => PuzzleGamePlayer.fromJson(e as Map<String, dynamic>))
+        .toList(),
+    pgn: json['pgn'] as String,
+    clock: json['clock'] as String?,
+  );
 }
 
 class PuzzleData {
@@ -79,13 +77,13 @@ class PuzzleData {
   });
 
   factory PuzzleData.fromJson(Map<String, dynamic> json) => PuzzleData(
-        id: json['id'] as String,
-        rating: json['rating'] as int,
-        plays: json['plays'] as int,
-        solution: (json['solution'] as List<dynamic>).cast<String>(),
-        themes: (json['themes'] as List<dynamic>).cast<String>(),
-        initialPly: json['initialPly'] as int,
-      );
+    id: json['id'] as String,
+    rating: json['rating'] as int,
+    plays: json['plays'] as int,
+    solution: (json['solution'] as List<dynamic>).cast<String>(),
+    themes: (json['themes'] as List<dynamic>).cast<String>(),
+    initialPly: json['initialPly'] as int,
+  );
 }
 
 class DailyPuzzle {
@@ -95,7 +93,7 @@ class DailyPuzzle {
   const DailyPuzzle({required this.game, required this.puzzle});
 
   factory DailyPuzzle.fromJson(Map<String, dynamic> json) => DailyPuzzle(
-        game: PuzzleGame.fromJson(json['game'] as Map<String, dynamic>),
-        puzzle: PuzzleData.fromJson(json['puzzle'] as Map<String, dynamic>),
-      );
+    game: PuzzleGame.fromJson(json['game'] as Map<String, dynamic>),
+    puzzle: PuzzleData.fromJson(json['puzzle'] as Map<String, dynamic>),
+  );
 }

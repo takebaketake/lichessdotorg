@@ -26,18 +26,18 @@ class UserProfile {
   });
 
   factory UserProfile.fromJson(Map<String, dynamic> json) => UserProfile(
-        country: json['country'] as String?,
-        location: json['location'] as String?,
-        bio: json['bio'] as String?,
-        firstName: json['firstName'] as String?,
-        lastName: json['lastName'] as String?,
-        fideRating: json['fideRating'] as int?,
-        uscfRating: json['uscfRating'] as int?,
-        ecfRating: json['ecfRating'] as int?,
-        cfcRating: json['cfcRating'] as int?,
-        rcfRating: json['rcfRating'] as int?,
-        links: json['links'] as String?,
-      );
+    country: json['country'] as String?,
+    location: json['location'] as String?,
+    bio: json['bio'] as String?,
+    firstName: json['firstName'] as String?,
+    lastName: json['lastName'] as String?,
+    fideRating: json['fideRating'] as int?,
+    uscfRating: json['uscfRating'] as int?,
+    ecfRating: json['ecfRating'] as int?,
+    cfcRating: json['cfcRating'] as int?,
+    rcfRating: json['rcfRating'] as int?,
+    links: json['links'] as String?,
+  );
 }
 
 class UserCount {
@@ -72,20 +72,20 @@ class UserCount {
   });
 
   factory UserCount.fromJson(Map<String, dynamic> json) => UserCount(
-        all: json['all'] as int,
-        rated: json['rated'] as int,
-        ai: json['ai'] as int,
-        draw: json['draw'] as int,
-        drawH: json['drawH'] as int,
-        loss: json['loss'] as int,
-        lossH: json['lossH'] as int,
-        win: json['win'] as int,
-        winH: json['winH'] as int,
-        bookmark: json['bookmark'] as int?,
-        playing: json['playing'] as int?,
-        import: json['import'] as int?,
-        me: json['me'] as int?,
-      );
+    all: json['all'] as int,
+    rated: json['rated'] as int,
+    ai: json['ai'] as int,
+    draw: json['draw'] as int,
+    drawH: json['drawH'] as int,
+    loss: json['loss'] as int,
+    lossH: json['lossH'] as int,
+    win: json['win'] as int,
+    winH: json['winH'] as int,
+    bookmark: json['bookmark'] as int?,
+    playing: json['playing'] as int?,
+    import: json['import'] as int?,
+    me: json['me'] as int?,
+  );
 }
 
 class UserPlayTime {
@@ -94,10 +94,8 @@ class UserPlayTime {
 
   const UserPlayTime({required this.total, required this.tv});
 
-  factory UserPlayTime.fromJson(Map<String, dynamic> json) => UserPlayTime(
-        total: json['total'] as int,
-        tv: json['tv'] as int,
-      );
+  factory UserPlayTime.fromJson(Map<String, dynamic> json) =>
+      UserPlayTime(total: json['total'] as int, tv: json['tv'] as int);
 }
 
 class UserPerf {
@@ -116,12 +114,12 @@ class UserPerf {
   });
 
   factory UserPerf.fromJson(Map<String, dynamic> json) => UserPerf(
-        games: json['games'] as int,
-        rating: json['rating'] as int,
-        rd: json['rd'] as int,
-        prog: json['prog'] as int,
-        prov: json['prov'] as bool?,
-      );
+    games: json['games'] as int,
+    rating: json['rating'] as int,
+    rd: json['rd'] as int,
+    prog: json['prog'] as int,
+    prov: json['prov'] as bool?,
+  );
 }
 
 class StormPerf {
@@ -130,10 +128,8 @@ class StormPerf {
 
   const StormPerf({required this.runs, required this.score});
 
-  factory StormPerf.fromJson(Map<String, dynamic> json) => StormPerf(
-        runs: json['runs'] as int,
-        score: json['score'] as int,
-      );
+  factory StormPerf.fromJson(Map<String, dynamic> json) =>
+      StormPerf(runs: json['runs'] as int, score: json['score'] as int);
 }
 
 class LichessUser {
@@ -255,11 +251,11 @@ class RatingPoint {
   });
 
   factory RatingPoint.fromList(List<dynamic> list) => RatingPoint(
-        year: list[0] as int,
-        month: list[1] as int,
-        day: list[2] as int,
-        rating: list[3] as int,
-      );
+    year: list[0] as int,
+    month: list[1] as int,
+    day: list[2] as int,
+    rating: list[3] as int,
+  );
 }
 
 class RatingHistory {
@@ -269,11 +265,11 @@ class RatingHistory {
   const RatingHistory({required this.name, required this.points});
 
   factory RatingHistory.fromJson(Map<String, dynamic> json) => RatingHistory(
-        name: json['name'] as String,
-        points: (json['points'] as List<dynamic>)
-            .map((e) => RatingPoint.fromList(e as List<dynamic>))
-            .toList(),
-      );
+    name: json['name'] as String,
+    points: (json['points'] as List<dynamic>)
+        .map((e) => RatingPoint.fromList(e as List<dynamic>))
+        .toList(),
+  );
 }
 
 class PerfGlicko {
@@ -288,10 +284,10 @@ class PerfGlicko {
   });
 
   factory PerfGlicko.fromJson(Map<String, dynamic> json) => PerfGlicko(
-        rating: (json['rating'] as num).toDouble(),
-        deviation: (json['deviation'] as num).toDouble(),
-        provisional: json['provisional'] as bool?,
-      );
+    rating: (json['rating'] as num).toDouble(),
+    deviation: (json['deviation'] as num).toDouble(),
+    provisional: json['provisional'] as bool?,
+  );
 }
 
 class UserPerfStats {

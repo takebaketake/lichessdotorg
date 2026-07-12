@@ -6,7 +6,9 @@ import 'package:lichessdotorg/lichessdotorg.dart';
 void main() async {
   final token = Platform.environment['LICHESS_AUTH_KEY'] ?? '';
   if (token.isEmpty) {
-    print('DIAGNOSTIC: LICHESS_AUTH_KEY environment variable is not set. Please set it to run the diagnostic test.');
+    print(
+      'DIAGNOSTIC: LICHESS_AUTH_KEY environment variable is not set. Please set it to run the diagnostic test.',
+    );
     return;
   }
   final client = http.Client();
@@ -20,7 +22,11 @@ void main() async {
       },
     );
     print('Status: ${response.statusCode}');
-    final lines = response.body.trim().split('\n').where((l) => l.isNotEmpty).toList();
+    final lines = response.body
+        .trim()
+        .split('\n')
+        .where((l) => l.isNotEmpty)
+        .toList();
     print('Lines count: ${lines.length}');
     for (int i = 0; i < lines.length; i++) {
       print('Line $i: ${lines[i]}');

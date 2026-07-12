@@ -4,7 +4,8 @@ class TournamentClock {
 
   const TournamentClock({required this.limit, required this.increment});
 
-  factory TournamentClock.fromJson(Map<String, dynamic> json) => TournamentClock(
+  factory TournamentClock.fromJson(Map<String, dynamic> json) =>
+      TournamentClock(
         limit: json['limit'] as int,
         increment: json['increment'] as int,
       );
@@ -37,10 +38,10 @@ class TournamentPerf {
   const TournamentPerf({required this.key, required this.name, this.icon});
 
   factory TournamentPerf.fromJson(Map<String, dynamic> json) => TournamentPerf(
-        key: json['key'] as String,
-        name: json['name'] as String,
-        icon: json['icon'] as String?,
-      );
+    key: json['key'] as String,
+    name: json['name'] as String,
+    icon: json['icon'] as String?,
+  );
 }
 
 class TournamentSchedule {
@@ -103,40 +104,39 @@ class LichessTournament {
     this.pairingsClosed,
   });
 
-  factory LichessTournament.fromJson(Map<String, dynamic> json) =>
-      LichessTournament(
-        id: json['id'] as String,
-        createdBy: json['createdBy'] as String?,
-        system: json['system'] as String?,
-        minutes: json['minutes'] as int?,
-        clock: json['clock'] != null
-            ? TournamentClock.fromJson(json['clock'] as Map<String, dynamic>)
-            : null,
-        rated: json['rated'] as bool? ?? false,
-        fullName: json['fullName'] as String,
-        nbPlayers: json['nbPlayers'] as int,
-        variant: json['variant'] != null
-            ? TournamentVariant.fromJson(
-                json['variant'] as Map<String, dynamic>)
-            : null,
-        startsAt: json['startsAt'] as String,
-        endsAt: json['endsAt'] as String?,
-        status: json['status'] as int,
-        perf: json['perf'] != null
-            ? TournamentPerf.fromJson(json['perf'] as Map<String, dynamic>)
-            : null,
-        schedule: json['schedule'] != null
-            ? TournamentSchedule.fromJson(
-                json['schedule'] as Map<String, dynamic>)
-            : null,
-        secondsToStart: json['secondsToStart'] as int?,
-        secondsToFinish: json['secondsToFinish'] as int?,
-        isFinished: json['isFinished'] as bool?,
-        isRecentlyFinished: json['isRecentlyFinished'] as bool?,
-        winner: json['winner'] as String?,
-        private: json['private'] as bool?,
-        pairingsClosed: json['pairingsClosed'] as bool?,
-      );
+  factory LichessTournament.fromJson(
+    Map<String, dynamic> json,
+  ) => LichessTournament(
+    id: json['id'] as String,
+    createdBy: json['createdBy'] as String?,
+    system: json['system'] as String?,
+    minutes: json['minutes'] as int?,
+    clock: json['clock'] != null
+        ? TournamentClock.fromJson(json['clock'] as Map<String, dynamic>)
+        : null,
+    rated: json['rated'] as bool? ?? false,
+    fullName: json['fullName'] as String,
+    nbPlayers: json['nbPlayers'] as int,
+    variant: json['variant'] != null
+        ? TournamentVariant.fromJson(json['variant'] as Map<String, dynamic>)
+        : null,
+    startsAt: json['startsAt'] as String,
+    endsAt: json['endsAt'] as String?,
+    status: json['status'] as int,
+    perf: json['perf'] != null
+        ? TournamentPerf.fromJson(json['perf'] as Map<String, dynamic>)
+        : null,
+    schedule: json['schedule'] != null
+        ? TournamentSchedule.fromJson(json['schedule'] as Map<String, dynamic>)
+        : null,
+    secondsToStart: json['secondsToStart'] as int?,
+    secondsToFinish: json['secondsToFinish'] as int?,
+    isFinished: json['isFinished'] as bool?,
+    isRecentlyFinished: json['isRecentlyFinished'] as bool?,
+    winner: json['winner'] as String?,
+    private: json['private'] as bool?,
+    pairingsClosed: json['pairingsClosed'] as bool?,
+  );
 }
 
 class TournamentList {

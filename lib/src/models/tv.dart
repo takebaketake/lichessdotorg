@@ -154,7 +154,9 @@ class TvChannels {
   factory TvChannels.fromJson(Map<String, dynamic> json) {
     TvChannel? parse(String key) {
       final data = json[key];
-      return data != null ? TvChannel.fromJson(data as Map<String, dynamic>) : null;
+      return data != null
+          ? TvChannel.fromJson(data as Map<String, dynamic>)
+          : null;
     }
 
     return TvChannels(

@@ -12,11 +12,11 @@ class GameUser {
   });
 
   factory GameUser.fromJson(Map<String, dynamic> json) => GameUser(
-        id: json['id'] as String,
-        name: json['name'] as String,
-        title: json['title'] as String?,
-        patron: json['patron'] as bool?,
-      );
+    id: json['id'] as String,
+    name: json['name'] as String,
+    title: json['title'] as String?,
+    patron: json['patron'] as bool?,
+  );
 }
 
 class PlayerAnalysis {
@@ -33,11 +33,11 @@ class PlayerAnalysis {
   });
 
   factory PlayerAnalysis.fromJson(Map<String, dynamic> json) => PlayerAnalysis(
-        inaccuracy: json['inaccuracy'] as int,
-        mistake: json['mistake'] as int,
-        blunder: json['blunder'] as int,
-        acpl: json['acpl'] as int,
-      );
+    inaccuracy: json['inaccuracy'] as int,
+    mistake: json['mistake'] as int,
+    blunder: json['blunder'] as int,
+    acpl: json['acpl'] as int,
+  );
 }
 
 class GamePlayer {
@@ -56,16 +56,16 @@ class GamePlayer {
   });
 
   factory GamePlayer.fromJson(Map<String, dynamic> json) => GamePlayer(
-        user: json['user'] != null
-            ? GameUser.fromJson(json['user'] as Map<String, dynamic>)
-            : null,
-        rating: json['rating'] as int?,
-        ratingDiff: json['ratingDiff'] as int?,
-        aiLevel: json['aiLevel'] as int?,
-        analysis: json['analysis'] != null
-            ? PlayerAnalysis.fromJson(json['analysis'] as Map<String, dynamic>)
-            : null,
-      );
+    user: json['user'] != null
+        ? GameUser.fromJson(json['user'] as Map<String, dynamic>)
+        : null,
+    rating: json['rating'] as int?,
+    ratingDiff: json['ratingDiff'] as int?,
+    aiLevel: json['aiLevel'] as int?,
+    analysis: json['analysis'] != null
+        ? PlayerAnalysis.fromJson(json['analysis'] as Map<String, dynamic>)
+        : null,
+  );
 }
 
 class GamePlayers {
@@ -75,9 +75,9 @@ class GamePlayers {
   const GamePlayers({required this.white, required this.black});
 
   factory GamePlayers.fromJson(Map<String, dynamic> json) => GamePlayers(
-        white: GamePlayer.fromJson(json['white'] as Map<String, dynamic>),
-        black: GamePlayer.fromJson(json['black'] as Map<String, dynamic>),
-      );
+    white: GamePlayer.fromJson(json['white'] as Map<String, dynamic>),
+    black: GamePlayer.fromJson(json['black'] as Map<String, dynamic>),
+  );
 }
 
 class GameOpening {
@@ -88,10 +88,10 @@ class GameOpening {
   const GameOpening({required this.eco, required this.name, required this.ply});
 
   factory GameOpening.fromJson(Map<String, dynamic> json) => GameOpening(
-        eco: json['eco'] as String,
-        name: json['name'] as String,
-        ply: json['ply'] as int,
-      );
+    eco: json['eco'] as String,
+    name: json['name'] as String,
+    ply: json['ply'] as int,
+  );
 }
 
 class GameClock {
@@ -106,10 +106,10 @@ class GameClock {
   });
 
   factory GameClock.fromJson(Map<String, dynamic> json) => GameClock(
-        initial: json['initial'] as int,
-        increment: json['increment'] as int,
-        totalTime: json['totalTime'] as int,
-      );
+    initial: json['initial'] as int,
+    increment: json['increment'] as int,
+    totalTime: json['totalTime'] as int,
+  );
 }
 
 class LichessGame {
@@ -152,26 +152,26 @@ class LichessGame {
   });
 
   factory LichessGame.fromJson(Map<String, dynamic> json) => LichessGame(
-        id: json['id'] as String,
-        rated: json['rated'] as bool,
-        variant: json['variant'] as String,
-        speed: json['speed'] as String,
-        perf: json['perf'] as String,
-        createdAt: json['createdAt'] as int,
-        lastMoveAt: json['lastMoveAt'] as int?,
-        status: json['status'] as String,
-        players: GamePlayers.fromJson(json['players'] as Map<String, dynamic>),
-        winner: json['winner'] as String?,
-        opening: json['opening'] != null
-            ? GameOpening.fromJson(json['opening'] as Map<String, dynamic>)
-            : null,
-        moves: json['moves'] as String?,
-        pgn: json['pgn'] as String?,
-        daysPerTurn: json['daysPerTurn'] as int?,
-        clock: json['clock'] != null
-            ? GameClock.fromJson(json['clock'] as Map<String, dynamic>)
-            : null,
-        tournament: json['tournament'] as String?,
-        swiss: json['swiss'] as String?,
-      );
+    id: json['id'] as String,
+    rated: json['rated'] as bool,
+    variant: json['variant'] as String,
+    speed: json['speed'] as String,
+    perf: json['perf'] as String,
+    createdAt: json['createdAt'] as int,
+    lastMoveAt: json['lastMoveAt'] as int?,
+    status: json['status'] as String,
+    players: GamePlayers.fromJson(json['players'] as Map<String, dynamic>),
+    winner: json['winner'] as String?,
+    opening: json['opening'] != null
+        ? GameOpening.fromJson(json['opening'] as Map<String, dynamic>)
+        : null,
+    moves: json['moves'] as String?,
+    pgn: json['pgn'] as String?,
+    daysPerTurn: json['daysPerTurn'] as int?,
+    clock: json['clock'] != null
+        ? GameClock.fromJson(json['clock'] as Map<String, dynamic>)
+        : null,
+    tournament: json['tournament'] as String?,
+    swiss: json['swiss'] as String?,
+  );
 }
