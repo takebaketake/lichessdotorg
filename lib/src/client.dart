@@ -499,6 +499,73 @@ class LichessClient {
     return ExplorerResult.fromJson(json);
   }
 
+  // Process-wide, so every LichessClient instance in the app shares one
+  // cache instead of each screen re-fetching positions the others already
+  // looked up. Bounded in size (oldest entry evicted once full) and in age
+  // (entries older than [_explorerCacheTtl] are treated as a miss) so it
+  // neither grows unbounded nor serves indefinitely stale data.
+  static final Map<String, _ExplorerCacheEntry> _explorerCache = {};
+  static const _explorerCacheLimit = 500;
+  static const _explorerCacheTtl = Duration(minutes: 30);
+
+  /// Cached variant of [getLichessExplorer].
+  ///
+  /// Keyed on the full set of query parameters, so distinct rating/speed
+  /// filters for the same FEN are cached separately. Concurrent calls for
+  /// the same key share one in-flight request rather than firing duplicates.
+  /// Use [getLichessExplorer] directly when a guaranteed-fresh response is
+  /// required.
+  Future<ExplorerResult> getLichessExplorerCached({
+    String? fen,
+    String? play,
+    String variant = 'standard',
+    List<String>? speeds,
+    List<int>? ratings,
+    String? since,
+    String? until,
+    int moves = 12,
+    int topGames = 4,
+    int recentGames = 4,
+  }) {
+    final key = [
+      variant,
+      fen,
+      play,
+      speeds == null ? null : (speeds.toList()..sort()).join(','),
+      ratings == null ? null : (ratings.toList()..sort()).join(','),
+      since,
+      until,
+      moves,
+      topGames,
+      recentGames,
+    ].join('|');
+
+    final existing = _explorerCache[key];
+    if (existing != null && existing.isExpired(_explorerCacheTtl)) {
+      _explorerCache.remove(key);
+    }
+
+    if (_explorerCache.length >= _explorerCacheLimit &&
+        !_explorerCache.containsKey(key)) {
+      _explorerCache.remove(_explorerCache.keys.first);
+    }
+
+    return (_explorerCache[key] ??= _ExplorerCacheEntry()).fetch(
+      () => getLichessExplorer(
+        fen: fen,
+        play: play,
+        variant: variant,
+        speeds: speeds,
+        ratings: ratings,
+        since: since,
+        until: until,
+        moves: moves,
+        topGames: topGames,
+        recentGames: recentGames,
+      ),
+    );
+  }
+
   /// Move statistics from a specific player's game history.
   ///
   /// [color] must be "white" or "black".
@@ -680,4 +747,33 @@ class LichessClient {
       throw LichessException(response.statusCode, response.body);
     }
   });
+}
+
+class _ExplorerCacheEntry {
+  ExplorerResult? _result;
+  DateTime? _fetchedAt;
+  Future<ExplorerResult>? _inFlight;
+
+  bool isExpired(Duration ttl) {
+    final fetchedAt = _fetchedAt;
+    return fetchedAt != null && DateTime.now().difference(fetchedAt) > ttl;
+  }
+
+  Future<ExplorerResult> fetch(Future<ExplorerResult> Function() request) {
+    final result = _result;
+    if (result != null) return Future.value(result);
+    _inFlight ??= request().then(
+      (result) {
+        _result = result;
+        _fetchedAt = DateTime.now();
+        _inFlight = null;
+        return result;
+      },
+      onError: (Object e) {
+        _inFlight = null;
+        throw e;
+      },
+    );
+    return _inFlight!;
+  }
 }
